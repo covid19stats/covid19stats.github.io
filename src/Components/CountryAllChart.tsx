@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { IByCountryRow, IByCountrySummaryRow } from '../types';
 import { AllInOneChart } from './AllInOneChart';
 

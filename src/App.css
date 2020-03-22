@@ -5,11 +5,12 @@
 .App-logo {
   height: 40vmin;
   pointer-events: none;
+  margin: 5rem;
 }
 
 @media (prefers-reduced-motion: no-preference) {
   .App-logo {
-    animation: App-logo-spin infinite 20s linear;
+    animation: App-logo-spin infinite 2s linear;
   }
 }
 
@@ -62,4 +63,8 @@
 
 .deaths {
   color: rgb(188,192,187);
+}
+
+a {
+  color: rgba(75,192,192,1);
 }

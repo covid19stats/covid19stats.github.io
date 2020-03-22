@@ -1,16 +1,10 @@
+import moment from 'moment';
 import Papa from 'papaparse';
 import React, { ChangeEvent, useState } from 'react';
 import './App.css';
 import { CountryAllChart } from './Components/CountryAllChart';
-import {
-  Dictionary,
-  IByCountrySummaryRow,
-  TByCountry,
-  TByCountryRowKey,
-  TByCountrySummary,
-  TByCountrySummaryKey,
-} from './types';
-import moment from 'moment';
+import loading from './loading.svg';
+import { Dictionary, TByCountry, TByCountryRowKey, TByCountrySummary, TByCountrySummaryKey } from './types';
 
 function App() {
 
@@ -21,7 +15,7 @@ function App() {
   const [isLoaded, setLoaded] = useState(false);
   const [isLoading, setLoading] = useState(false);
   const [byCountry, setByCountry] = useState({} as TByCountry);
-  const [countriesByConfirmed, setCountriesByConfirmed] = useState([] as string[]);
+  const [countriesSorted, setCountriesSorted] = useState([] as string[]);
   const [byCountrySummary, setByCountrySummary] = useState({} as TByCountrySummary);
   const [orderBy, setOrderBy] = useState('confirmed' as TByCountrySummaryKey);
   const [orderDir, setOrderDir] = useState('desc' as 'desc' | 'asc');
@@ -45,17 +39,17 @@ function App() {
         setLastOrderDir(orderDir);
         setByCountry(byCountry);
         setByCountrySummary(byCountrySummary);
-        setCountriesByConfirmed(countriesByConfirmed);
+        setCountriesSorted(countriesByConfirmed);
         setLoaded(true);
         setLoading(false);
       });
 
     } else if(lastOrderBy !== orderBy || lastOrderDir !== orderDir) {
       setLoading(true);
-      const countriesByConfirmed: string[] = sortCountriesBy(byCountrySummary, orderBy, orderDir);
+      const countriesSorted: string[] = sortCountriesBy(byCountrySummary, orderBy, orderDir);
       setLastOrderBy(orderBy);
       setLastOrderDir(orderDir);
-      setCountriesByConfirmed(countriesByConfirmed);
+      setCountriesSorted(countriesSorted);
       setLoading(false);
     }
   }
@@ -81,7 +75,7 @@ function App() {
           <p><small>(data source: <a href="https://github.com/CSSEGISandData/COVID-19">https://github.com/CSSEGISandData/COVID-19</a>)</small></p>
         </header>
 
-        {countriesByConfirmed.length > 0 &&
+        {countriesSorted.length > 0 &&
         <div className="container">
           <div className="row">
             <div className="col-12">
@@ -99,7 +93,7 @@ function App() {
             </div>
           </div>
           <div className="row">
-            {countriesByConfirmed.map((country, i) => (
+            {countriesSorted.map((country, i) => (
               <CountryAllChart
                 country={country}
                 summary={byCountrySummary[country]}
@@ -110,6 +104,15 @@ function App() {
           </div>
         </div>
         }
+
+        {countriesSorted.length === 0 &&
+        <img src={loading} className="App-logo" alt="loading" />
+        }
+
+        <footer>
+          <p><small>Source code available at: <a href="https://github.com/covid19stats/covid19stats.github.io">https://github.com/covid19stats/covid19stats.github.io</a>.</small></p>
+          <p><small>Suggestions and Pull Requests are very welcome.</small></p>
+        </footer>
 
       </div>
     </div>
