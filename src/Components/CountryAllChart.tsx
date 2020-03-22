@@ -18,7 +18,7 @@ export const CountryAllChart = (props: ICountryAllChartProps) => {
   const firstContactDate = `${summary?.firstContactDate}` || '-';
 
   return (
-    <div className="col-6" key={country}>
+    <div className="col-12 col-lg-6" key={country}>
       <div className="chartBox">
         <h4>{country} <span className="active">{active}</span> <span className="confirmed">{confirmed}</span> <span
           className="recovered">{recovered}</span> <span className="deaths">{deaths}</span></h4>
