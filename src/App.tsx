@@ -78,6 +78,7 @@ function App() {
 
         <header className="header">
           <h1>Coronavirus COVID-19 Stat Charts</h1>
+          <p><small>(data source: <a href="https://github.com/CSSEGISandData/COVID-19">https://github.com/CSSEGISandData/COVID-19</a>)</small></p>
         </header>
 
         {countriesByConfirmed.length > 0 &&

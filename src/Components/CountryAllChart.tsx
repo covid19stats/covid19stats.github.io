@@ -22,7 +22,7 @@ export const CountryAllChart = (props: ICountryAllChartProps) => {
       <div className="chartBox">
         <h4>{country} <span className="active">{active}</span> <span className="confirmed">{confirmed}</span> <span
           className="recovered">{recovered}</span> <span className="deaths">{deaths}</span></h4>
-        <div>First contact: {firstContactDate}</div>
+        <p><small>First contact: {firstContactDate}</small></p>
         <AllInOneChart
           labels={Object.keys(data.confirmed)}
           confirmedData={Object.values(data.confirmed)}
