@@ -1,3 +1,4 @@
+import { InputLabel, MenuItem, Select } from '@material-ui/core';
 import moment from 'moment';
 import Papa from 'papaparse';
 import React, { ChangeEvent, useState } from 'react';
@@ -49,21 +50,22 @@ function App() {
       const countriesSorted: string[] = sortCountriesBy(byCountrySummary, orderBy, orderDir);
       setLastOrderBy(orderBy);
       setLastOrderDir(orderDir);
+      console.log('countriesSorted', countriesSorted);
       setCountriesSorted(countriesSorted);
       setLoading(false);
     }
   }
 
-  const handleOrderBySelect = (val: ChangeEvent<HTMLSelectElement>) => {
-    console.log('handleOrderBySelect val', val.target.value);
+  const handleOrderBySelect = (event: React.ChangeEvent<{ name?: string; value: unknown }>, child: React.ReactNode,) => {
+    console.log('handleOrderBySelect val', event.target.value);
     // @ts-ignore
-    setOrderBy(val.target.value);
+    setOrderBy(event.target.value);
   };
 
-  const handleOrderDirSelect = (val: ChangeEvent<HTMLSelectElement>) => {
-    console.log('handleOrderDirSelect val', val.target.value);
+  const handleOrderDirSelect = (event: React.ChangeEvent<{ name?: string; value: unknown }>, child: React.ReactNode,) => {
+    console.log('handleOrderDirSelect val', event.target.value);
     // @ts-ignore
-    setOrderDir(val.target.value);
+    setOrderDir(event.target.value);
   };
 
   return (
@@ -78,18 +80,22 @@ function App() {
         {countriesSorted.length > 0 &&
         <div className="container">
           <div className="row">
-            <div className="col-12">
-              Order by: <select value={orderBy} onChange={handleOrderBySelect}>
-              <option value="confirmed">confirmed</option>
-              <option value="active">active</option>
-              <option value="recovered">recovered</option>
-              <option value="deaths">deaths</option>
-              <option value="firstContactDate">first contact date</option>
-            </select>
-              <select value={orderDir} onChange={handleOrderDirSelect}>
-                <option value="desc">desc</option>
-                <option value="asc">asc</option>
-              </select>
+            <div className="col-12 d-flex justify-content-end">
+
+              <div className="mr-4">Order by:</div>
+              <Select id="orderBy" value={orderBy} onChange={handleOrderBySelect} className="mr-2">
+                <MenuItem value="confirmed">confirmed</MenuItem>
+                <MenuItem value="active">active</MenuItem>
+                <MenuItem value="recovered">recovered</MenuItem>
+                <MenuItem value="deaths">deaths</MenuItem>
+                <MenuItem value="firstContactDate">first contact date</MenuItem>
+              </Select>
+
+              <Select id="orderDir" value={orderDir} onChange={handleOrderDirSelect}>
+                <MenuItem value="desc">desc</MenuItem>
+                <MenuItem value="asc">asc</MenuItem>
+              </Select>
+
             </div>
           </div>
           <div className="row">
@@ -120,11 +126,22 @@ function App() {
 }
 
 const sortCountriesBy = (byCountrySummary: TByCountrySummary, key: TByCountrySummaryKey, order: 'desc' | 'asc' = 'desc') => Object.keys(byCountrySummary).sort((c1: string, c2: string) => {
+  let sortOrder = order;
   const v1 = byCountrySummary[c1][key];
   const v2 = byCountrySummary[c2][key];
-  if (order === 'desc') {
+  if (key === 'firstContactDate') {
+    // reorder for dates
+    sortOrder = (order === 'desc') ? 'asc' : 'desc';
+  }
+  if (sortOrder === 'desc') {
+    // console.log('sortCountriesBy ', c1, v1, v2, v1 === v2 ? 0 : v1 < v2 ? 1 : -1);
+    if (v1 === undefined) return -1;
+    if (v2 === undefined) return 1;
     return v1 === v2 ? 0 : v1 < v2 ? 1 : -1;
   }
+  // console.log('sortCountriesBy ', c1, v1, v2, v1 === v2 ? 0 : v1 > v2 ? 1 : -1);
+  if (v1 === undefined) return 1;
+  if (v2 === undefined) return -1;
   return v1 === v2 ? 0 : v1 > v2 ? 1 : -1;
 });
 
@@ -145,20 +162,22 @@ const addDataToCountry = (destination: TByCountry, dataInput: Dictionary<string>
   for (let i = 0; i < dataInput.length; i += 1) {
     const row = dataInput[i];
     const country = row['Country/Region'];
-    if (!destination[country]) {
-      destination[country] = {
-        confirmed: {},
-        recovered: {},
-        deaths: {},
-        active: {},
-      };
-    }
+    if (country) {
+      if (!destination[country]) {
+        destination[country] = {
+          confirmed: {},
+          recovered: {},
+          deaths: {},
+          active: {},
+        };
+      }
 
-    const dateKeys = Object.keys(row).filter(k => k.match(/[0-9/]{6,}/));
-    dateKeys.forEach(date => {
-      const reformattedDate = moment(date, 'M/D/YY').format('YYYY-MM-DD');
-      destination[country][key][reformattedDate] = parseInt(row[date]) + (destination[country][key][reformattedDate] | 0);
-    });
+      const dateKeys = Object.keys(row).filter(k => k.match(/[0-9/]{6,}/));
+      dateKeys.forEach(date => {
+        const reformattedDate = moment(date, 'M/D/YY').format('YYYY-MM-DD');
+        destination[country][key][reformattedDate] = parseInt(row[date]) + (destination[country][key][reformattedDate] | 0);
+      });
+    }
   }
 };
 
@@ -167,13 +186,20 @@ const getCountrySummary = (byCountry: TByCountry): TByCountrySummary => {
   Object.keys(byCountry).forEach((country) => {
     const confKeys = Object.keys(byCountry[country].confirmed);
     const confVals = Object.values(byCountry[country].confirmed);
-    const recKeys = Object.keys(byCountry[country].recovered);
-    const deKeys = Object.keys(byCountry[country].deaths);
-    const confirmed = byCountry[country].confirmed[confKeys[confKeys.length - 1]];
-    const recovered = byCountry[country].recovered[recKeys[recKeys.length - 1]];
-    const deaths = byCountry[country].deaths[deKeys[deKeys.length - 1]];
 
-    const firstContactDate = confKeys[confVals.findIndex(n => n > 0)];
+    const confVals2 = Object.values(byCountry[country].confirmed);
+    let reversedConfVals = confVals2.reverse();
+    const confirmed = reversedConfVals.find(v => v > 0) || 0;
+
+    const recVals = Object.values(byCountry[country].recovered);
+    let reversedRecVals = recVals.reverse();
+    const recovered = reversedRecVals.find(v => v > 0) || 0;
+
+    const deVals = Object.values(byCountry[country].deaths);
+    let reversedDeVals = deVals.reverse();
+    const deaths = reversedDeVals.find(v => v > 0) || 0;
+
+    const firstContactDate = confKeys[confVals.findIndex(n => n > 0)] || moment().format('YYYY-MM-DD');
 
     byCountrySummary[country] = {
       firstContactDate,

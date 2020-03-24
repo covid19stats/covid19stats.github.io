@@ -68,3 +68,7 @@
 a {
   color: rgba(75,192,192,1);
 }
+
+.MuiInputBase-root, .MuiSvgIcon-root, .MuiFormLabel-root {
+  color: white !important;
+}
